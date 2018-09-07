@@ -11,7 +11,11 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.BasicStats;
 import org.apache.lucene.search.similarities.SimilarityBase;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class LuceneSearcher {
     public final IndexSearcher searcher;
@@ -41,7 +45,9 @@ public class LuceneSearcher {
     }
 
     public void run() throws IOException {
-        // Quick sketch of things you might need
+        FileWriter fstream = new FileWriter("results1.txt", true);
+        BufferedWriter out = new BufferedWriter(fstream);
+
         for (Data.Page page : pages) {
 
             // Id of the page, which is needed when you print out the run file
@@ -49,31 +55,68 @@ public class LuceneSearcher {
 
             // This query is the name of the page
             String query = page.getPageName();
-            doSearch(query);
-
+            ArrayList<idScore> idSc = doSearch(query);
+            int counter = 1;
+            for (idScore item : idSc) {
+                out.write(pageId + " Q0 " + item.i + " " + counter + " " + item.s + " team2-standard\n");
+                counter++;
+            }
         }
 
+        out.close();
     }
 
-    public void customRun() {
-        // We don't need this right now
+    public void customRun() throws IOException {
+        FileWriter fstream = new FileWriter("results2.txt", true);
+        BufferedWriter out = new BufferedWriter(fstream);
+
+        for (Data.Page page : pages) {
+
+            // Id of the page, which is needed when you print out the run file
+            String pageId = page.getPageId();
+
+            // This query is the name of the page
+            String query = page.getPageName();
+            ArrayList<idScore> idSc = doSearch(query);
+            int counter = 1;
+            for (idScore item : idSc) {
+                out.write(pageId + " Q0 " + item.i + " " + counter + " " + item.s + " team2-standard\n");
+                counter++;
+            }
+        }
+        out.close();
     }
 
-    public void doSearch(String query) throws IOException {
+    public ArrayList<idScore> doSearch(String query) throws IOException {
         TopDocs topDocs = query(query, 100);
 
+        ArrayList<idScore> al = new ArrayList<>();
         // This is an example of iterating of search results
         for (ScoreDoc sd : topDocs.scoreDocs) {
             Document doc = searcher.doc(sd.doc);
             String paraId = doc.get("id");
             float score = sd.score;
+            idScore cur = new idScore(paraId, score);
+            al.add(cur);
         }
 
         // You should return something here after parsing out the paragraph ids and scores
+        return al;
     }
 
-    public void custom () throws IOException {
-        System.out.println("This is custom Scoring function");
+    // Custom class for storing the retrieved data
+    public class idScore {
+        String i;
+        float s;
+
+        idScore(String id, float score) {
+            i = id;
+            s = score;
+        }
+    }
+
+    public void custom() throws IOException {
+        //System.out.println("This is custom Scoring function");
         SimilarityBase mysimilarity= new SimilarityBase() {
             @Override
             protected float score(BasicStats basicStats, float v, float v1) {
@@ -96,9 +139,8 @@ public class LuceneSearcher {
 //            String text = doc.get("text");
 //            System.out.println("id: " + id + "\ntext: " + text);
 //        }
-
-
     }
+
     /**
      * Function: queryWithCustomScore
      * Desc: Queries Lucene paragraph corpus using a custom similarity function.
@@ -134,5 +176,14 @@ public class LuceneSearcher {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static void main (String [] args) throws IOException {
+        LuceneSearcher searcher1 = new LuceneSearcher("/home/rachel/ir/P1/paragraphs", "/home/rachel/ir/test200/test200-train/train.pages.cbor-outlines.cbor");
+        searcher1.run();
+
+        LuceneSearcher custom = new LuceneSearcher("/home/rachel/ir/P1/paragraphs", "/home/rachel/ir/test200/test200-train/train.pages.cbor-outlines.cbor");
+        custom.custom();
+        custom.customRun();
     }
 }
