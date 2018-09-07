@@ -35,25 +35,19 @@ public class Main {
 
 		String option = args[0];
 		String path = args[1];
+		String cborOutlineLoc = args[2];
 
 		if (option.equals("index")) {
 			LuceneIndexer indexer  = new LuceneIndexer("paragraphs"); // The directory that will be made
 			indexer.doIndex(path);
 		}
 		else if (option.equals("search")) {
-			System.out.println("here");
-			LuceneSearcher searcher = new LuceneSearcher(path);
-			searcher.doPowerNapQuery();
-			searcher.doWhaleQuery();
-			searcher.doPokemonPuzzleLeagueQuery();
+			LuceneSearcher searcher = new LuceneSearcher(path, cborOutlineLoc);
+			searcher.run();
 		} else if (option.equals("custom")) {
 
-           LuceneSearcher searcher= new LuceneSearcher(path);
-
-           searcher.custom();
-			searcher.doPowerNapQuery();
-			searcher.doWhaleQuery();
-			searcher.doPokemonPuzzleLeagueQuery();
+           LuceneSearcher searcher= new LuceneSearcher(path, cborOutlineLoc);
+           searcher.customRun();
 
 		}
 

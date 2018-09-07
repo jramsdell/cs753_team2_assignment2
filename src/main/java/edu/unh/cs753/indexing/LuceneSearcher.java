@@ -1,5 +1,7 @@
 package edu.unh.cs753.indexing;
 
+import edu.unh.cs.treccar_v2.Data;
+import edu.unh.cs753.utils.IndexUtils;
 import edu.unh.cs753.utils.SearchUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
@@ -13,9 +15,11 @@ import java.io.IOException;
 
 public class LuceneSearcher {
     public final IndexSearcher searcher;
+    public final Iterable<Data.Page> pages;
 
-    public LuceneSearcher(String indexLoc) {
+    public LuceneSearcher(String indexLoc, String queryCborLoc) {
         searcher = SearchUtils.createIndexSearcher(indexLoc);
+        pages = IndexUtils.createPageIterator(queryCborLoc);
     }
 
     /**
@@ -36,37 +40,36 @@ public class LuceneSearcher {
         return null;
     }
 
-    public void doPowerNapQuery() throws IOException {
-        System.out.println("Query: power nap benefits");
-        TopDocs topDocs = query("power nap benefits", 10);
-        for (ScoreDoc sd : topDocs.scoreDocs) {
-            Document doc = searcher.doc(sd.doc);
-            String id = doc.get("id");
-            String text = doc.get("text");
-            System.out.println("id: " + id + "\ntext: " + text);
+    public void run() throws IOException {
+        // Quick sketch of things you might need
+        for (Data.Page page : pages) {
+
+            // Id of the page, which is needed when you print out the run file
+            String pageId = page.getPageId();
+
+            // This query is the name of the page
+            String query = page.getPageName();
+            doSearch(query);
+
         }
+
     }
 
-    public void doWhaleQuery() throws IOException {
-        System.out.println("Query: whale vocalization production of sound");
-        TopDocs topDocs = query("whale vocalization production of sound", 10);
-        for (ScoreDoc sd : topDocs.scoreDocs) {
-            Document doc = searcher.doc(sd.doc);
-            String id = doc.get("id");
-            String text = doc.get("text");
-            System.out.println("id: " + id + "\ntext: " + text);
-        }
+    public void customRun() {
+        // We don't need this right now
     }
 
-    public void doPokemonPuzzleLeagueQuery() throws IOException {
-        System.out.println("Query: pokemon puzzle league");
-        TopDocs topDocs = query("pokemon puzzle league", 10);
+    public void doSearch(String query) throws IOException {
+        TopDocs topDocs = query(query, 100);
+
+        // This is an example of iterating of search results
         for (ScoreDoc sd : topDocs.scoreDocs) {
             Document doc = searcher.doc(sd.doc);
-            String id = doc.get("id");
-            String text = doc.get("text");
-            System.out.println("id: " + id + "\ntext: " + text);
+            String paraId = doc.get("id");
+            float score = sd.score;
         }
+
+        // You should return something here after parsing out the paragraph ids and scores
     }
 
     public void custom () throws IOException {
