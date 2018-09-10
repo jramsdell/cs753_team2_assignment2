@@ -62,6 +62,29 @@ public class EvaluationUtils {
         return m;
     }
 
+    public static double getPrecisionAtR(HashMap<String, HashSet<String>> qrels, HashMap<String, ArrayList<String>> res1) {
+        // Iterate through the hash map of results (res1) and check if each id is in the relevant data hash map
+
+        // Get the number of relevant documents
+        double size = qrels.size();
+
+        // Parse the first "size" elements of our results hash map
+        int counter = 0;
+        System.out.println("size: " + size);
+        double hits = 0;
+        Iterator it = res1.entrySet().iterator();
+        while (it.hasNext() && counter < size) {
+            Map.Entry pair = (Map.Entry)it.next();
+            if (qrels.containsKey(pair.getKey())) {
+                hits++;
+            }
+            counter++;
+        }
+        System.out.println("hits: " + hits);
+        double rPrec = hits/size;
+        return rPrec;
+    }
+
     public static void main(String [] args) throws IOException {
 
         String qrels = "/home/rachel/ir/test200/test200-train/train.pages.cbor-article.qrels";
@@ -73,6 +96,8 @@ public class EvaluationUtils {
         HashMap<String, ArrayList<String>> metrics1 = EvaluationUtils.ParseResults(res1);
         HashMap<String, ArrayList<String>> metrics2 = EvaluationUtils.ParseResults(res2);
 
+        double rPres = getPrecisionAtR(relevant, metrics1);
+        System.out.println("Precision at R: " + rPres);
     }
 
 
