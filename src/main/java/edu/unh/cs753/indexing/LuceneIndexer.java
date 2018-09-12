@@ -34,4 +34,14 @@ public class LuceneIndexer {
         writer.close();
     }
 
+
+    public  static void main (String[] args) throws IOException {
+
+        LuceneSearcher searcher = new LuceneSearcher("/Users/abhinav/IdeaProjects/cs753_team2_assignment1/paragraphs",
+                "/Users/abhinav/Desktop/train.pages.cbor-outlines.cbor");
+               searcher.run();
+
+
+    }
+
 }

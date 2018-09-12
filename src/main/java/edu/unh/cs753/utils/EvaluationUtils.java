@@ -28,7 +28,6 @@ public class EvaluationUtils {
             }
             HashSet<String> hs = m.get(query);
             hs.add(ID);
-            m.put(query, hs);
         }
         in.close();
         return m;
@@ -56,7 +55,6 @@ public class EvaluationUtils {
             }
             ArrayList<String> al = m.get(query);
             al.add(ID);
-            m.put(query, al);
         }
         in.close();
         return m;
@@ -80,7 +78,7 @@ public class EvaluationUtils {
             List<String> retrievedDocuments = res1.get(query);
 
             while (counter < r) {
-                if (relevantDocuments.contains(retrievedDocuments.get(r))) {
+                if (relevantDocuments.contains(retrievedDocuments.get(counter))) {
                     hits += 1.0;
                 }
                 counter++;
@@ -88,30 +86,80 @@ public class EvaluationUtils {
 
             totalPrecision += hits / r;
         }
-//        while (it.hasNext() && counter < size) {
-//            Map.Entry pair = (Map.Entry)it.next();
-//            if (qrels.containsKey(pair.getKey())) {
-//                hits++;
-//            }
-//            counter++;
-//        }
-//        double rPrec = hits/size;
+
         return totalPrecision / numberOfQueries;
     }
 
+
+    public static double getMap(HashMap<String, HashSet<String>> qrels, HashMap<String, ArrayList<String>> res1) {
+        // Iterate through the hash map of results (res1) and check if each id is in the relevant data hash map
+
+        // Get the number of relevant documents
+        double numberOfQueries = qrels.size();
+
+
+        double totalMap = 0.0;
+        System.out.println(qrels.size());
+        System.out.println(res1.size());
+
+
+        for (String query : qrels.keySet()) {
+
+            double num=0;
+            double denom=0;
+            double mapresult=0;
+            int counter = 0;
+            Set<String> relevantDocuments = qrels.get(query);
+
+            int r2=relevantDocuments.size();
+
+            // r2 is our number of relavant documents
+            List<String> retrievedDocuments = res1.get(query);
+            if (retrievedDocuments == null) {
+                continue;
+            }
+            int r1 = retrievedDocuments.size();
+            // r1 is the number of retrieved documents.
+
+            while (counter < r1) {
+                if (relevantDocuments.contains(retrievedDocuments.get(counter))) {
+
+                    num +=1.0;
+                    denom +=1.0;
+
+                    mapresult += num/denom;
+                } else {
+                    denom +=1.0;
+                }
+                counter++;
+            }
+
+            mapresult = mapresult/r2;
+            // r2 is the number of relevant documents and we divide by this not by total number of documents.
+            totalMap += mapresult;
+        }
+
+        return totalMap / numberOfQueries;
+    }
+
+
+
     public static void main(String [] args) throws IOException {
 
-        String qrels = "/home/rachel/ir/test200/test200-train/train.pages.cbor-article.qrels";
+        String qrels = "/Users/abhinav/desktop/train.pages.cbor-article.qrels";
         HashMap<String, HashSet<String>> relevant = EvaluationUtils.GetRelevantQueries(qrels);
 
-        String res1 = "/home/rachel/ir/P2/cs753_team2_assignment2/results1.txt";
-        String res2 = "/home/rachel/ir/P2/cs753_team2_assignment2/results2.txt";
+        String res1 = "/Users/abhinav/desktop/results1.txt";
+        String res2 = "/Users/abhinav/desktop/results2.txt";
 
         HashMap<String, ArrayList<String>> metrics1 = EvaluationUtils.ParseResults(res1);
         HashMap<String, ArrayList<String>> metrics2 = EvaluationUtils.ParseResults(res2);
 
-        double rPres = getPrecisionAtR(relevant, metrics1);
-        System.out.println("Precision at R: " + rPres);
+        double nmap1 = getMap(relevant, metrics1);
+        double nmap2 = getMap(relevant, metrics2);
+
+        System.out.println("Map is " + nmap1);
+        System.out.println("Map is " + nmap2);
     }
 
 
