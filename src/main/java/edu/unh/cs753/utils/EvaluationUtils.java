@@ -66,23 +66,37 @@ public class EvaluationUtils {
         // Iterate through the hash map of results (res1) and check if each id is in the relevant data hash map
 
         // Get the number of relevant documents
-        double size = qrels.size();
+        double numberOfQueries = qrels.size();
 
         // Parse the first "size" elements of our results hash map
-        int counter = 0;
-        System.out.println("size: " + size);
-        double hits = 0;
         Iterator it = res1.entrySet().iterator();
-        while (it.hasNext() && counter < size) {
-            Map.Entry pair = (Map.Entry)it.next();
-            if (qrels.containsKey(pair.getKey())) {
-                hits++;
+        double totalPrecision = 0.0;
+
+        for (String query : qrels.keySet()) {
+            double hits = 0;
+            int counter = 0;
+            Set<String> relevantDocuments = qrels.get(query);
+            int r = relevantDocuments.size();
+            List<String> retrievedDocuments = res1.get(query);
+
+            while (counter < r) {
+                if (relevantDocuments.contains(retrievedDocuments.get(r))) {
+                    hits += 1.0;
+                }
+                counter++;
             }
-            counter++;
+
+            totalPrecision += hits / r;
         }
-        System.out.println("hits: " + hits);
-        double rPrec = hits/size;
-        return rPrec;
+//        while (it.hasNext() && counter < size) {
+//            Map.Entry pair = (Map.Entry)it.next();
+//            if (qrels.containsKey(pair.getKey())) {
+//                hits++;
+//            }
+//            counter++;
+//        }
+//        double rPrec = hits/size;
+        return totalPrecision / numberOfQueries;
     }
 
     public static void main(String [] args) throws IOException {
