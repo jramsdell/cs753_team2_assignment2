@@ -5,11 +5,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
 import edu.unh.cs753.indexing.LuceneSearcher;
 import edu.unh.cs753.indexing.LuceneIndexer;
+import edu.unh.cs753.utils.EvaluationUtils;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
@@ -26,6 +28,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
+import utils.KotlinEvaluationUtils;
 
 public class Main {
 
@@ -50,6 +53,16 @@ public class Main {
 			searcher.customRun();
 		}
 		else if (option.equals("evaluate")) {
+			String runfileLoc = args[2];
+			HashMap<String, HashMap<String, Integer>> relevant = EvaluationUtils.GetRelevantQueries(path);
+			HashMap<String, ArrayList<String>> runfileMap = EvaluationUtils.ParseResults(runfileLoc);
+			double ndcg20 = KotlinEvaluationUtils.INSTANCE.getNDCG(relevant, runfileMap);
+			double map = EvaluationUtils.getMap(relevant, runfileMap);
+			double rprec = EvaluationUtils.getPrecisionAtR(relevant, runfileMap);
+
+			System.out.println("Precision @ R: " + rprec);
+			System.out.println("MAP: " + map);
+			System.out.println("NDCG @ 20: " + ndcg20);
 
 		}
 

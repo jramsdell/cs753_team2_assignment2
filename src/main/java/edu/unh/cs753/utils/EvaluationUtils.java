@@ -1,5 +1,8 @@
 package edu.unh.cs753.utils;
 
+
+import utils.KotlinEvaluationUtils;
+
 import java.io.*;
 import java.util.*;
 
@@ -8,9 +11,9 @@ public class EvaluationUtils {
     // Make a static function that takes this path as a function.
     // Open the file, split based on space, make a map of sets,
     // key = query, set = the results that are relevant to the query.
-    public static HashMap<String, HashSet<String>> GetRelevantQueries(String path) throws IOException {
+    public static HashMap<String, HashMap<String, Integer>> GetRelevantQueries(String path) throws IOException {
         // Initialie hashmap
-        HashMap<String, HashSet<String>> m = new HashMap<>();
+        HashMap<String, HashMap<String, Integer>> m = new HashMap<>();
 
         FileReader fstream = new FileReader(path);
         BufferedReader in = new BufferedReader(fstream);
@@ -19,14 +22,14 @@ public class EvaluationUtils {
         while (line != null) {
             String[] elements = line.split(" ");
             String query = elements[0];
-            String ID = elements[2];
+            String id = elements[2];
+            Integer relevance = Integer.parseInt(elements[3]);
 
             if (!m.containsKey(query)) {
-                HashSet<String> s = new HashSet<>();
-                m.put(query, s);
+                m.put(query, new HashMap<>());
             }
-            HashSet<String> hs = m.get(query);
-            hs.add(ID);
+            m.get(query).put(id, relevance);
+
             line = in.readLine();
         }
         in.close();
@@ -61,7 +64,7 @@ public class EvaluationUtils {
         return m;
     }
 
-    public static double getPrecisionAtR(HashMap<String, HashSet<String>> qrels, HashMap<String, ArrayList<String>> res1) {
+    public static double getPrecisionAtR(HashMap<String, HashMap<String, Integer>> qrels, HashMap<String, ArrayList<String>> res1) {
         // Iterate through the hash map of results (res1) and check if each id is in the relevant data hash map
 
         // Get the number of relevant documents
@@ -74,7 +77,7 @@ public class EvaluationUtils {
         for (String query : qrels.keySet()) {
             double hits = 0;
             int counter = 0;
-            Set<String> relevantDocuments = qrels.get(query);
+            HashMap<String, Integer> relevantDocuments = qrels.get(query);
             int r = relevantDocuments.size();
             List<String> retrievedDocuments = res1.get(query);
             if (retrievedDocuments == null) {
@@ -82,7 +85,7 @@ public class EvaluationUtils {
             }
 
             while (counter < r && counter < retrievedDocuments.size()) {
-                if (relevantDocuments.contains(retrievedDocuments.get(counter))) {
+                if (relevantDocuments.containsKey(retrievedDocuments.get(counter))) {
                     hits += 1.0;
                 }
                 counter++;
@@ -95,7 +98,7 @@ public class EvaluationUtils {
     }
 
 
-    public static double getMap(HashMap<String, HashSet<String>> qrels, HashMap<String, ArrayList<String>> res1) {
+    public static double getMap(HashMap<String, HashMap<String, Integer>> qrels, HashMap<String, ArrayList<String>> res1) {
         // Iterate through the hash map of results (res1) and check if each id is in the relevant data hash map
 
         // Get the number of relevant documents
@@ -103,9 +106,6 @@ public class EvaluationUtils {
 
 
         double totalMap = 0.0;
-        System.out.println(qrels.size());
-        System.out.println(res1.size());
-
 
         for (String query : qrels.keySet()) {
 
@@ -113,7 +113,7 @@ public class EvaluationUtils {
             double denom=0;
             double mapresult=0;
             int counter = 0;
-            Set<String> relevantDocuments = qrels.get(query);
+            HashMap<String, Integer> relevantDocuments = qrels.get(query);
 
             int r2=relevantDocuments.size();
 
@@ -126,7 +126,7 @@ public class EvaluationUtils {
             // r1 is the number of retrieved documents.
 
             while (counter < r1) {
-                if (relevantDocuments.contains(retrievedDocuments.get(counter))) {
+                if (relevantDocuments.containsKey(retrievedDocuments.get(counter))) {
 
                     num +=1.0;
                     denom +=1.0;
@@ -146,26 +146,12 @@ public class EvaluationUtils {
         return totalMap / numberOfQueries;
     }
 
-    public static double getNDCG(HashMap<String, HashSet<String>> qrels, HashMap<String, ArrayList<String>> queryResults) {
-        for (String query : qrels.keySet()) {
-            Set<String> relDocs = qrels.get(query);
-            ArrayList<String> retrievedDocs = queryResults.get(query);
-            if (retrievedDocs == null) {
-                continue;
-            }
-
-
-
-        }
-
-        return 0.0;
-    }
 
 
     public static void main(String [] args) throws IOException {
 
         String qrels = "/home/hcgs/data_science/data/test200/test200-train/train.pages.cbor-article.qrels";
-        HashMap<String, HashSet<String>> relevant = EvaluationUtils.GetRelevantQueries(qrels);
+        HashMap<String, HashMap<String, Integer>> relevant = EvaluationUtils.GetRelevantQueries(qrels);
 
         String res1 = "/home/hcgs/Desktop/projects/cs753_team2_assignment2/results1.txt";
 //        String res2 = "/Users/abhinav/desktop/results2.txt";
@@ -173,7 +159,7 @@ public class EvaluationUtils {
         HashMap<String, ArrayList<String>> metrics1 = EvaluationUtils.ParseResults(res1);
 //        HashMap<String, ArrayList<String>> metrics2 = EvaluationUtils.ParseResults(res2);
 
-        double nmap1 = getMap(relevant, metrics1);
+        double nmap1 = KotlinEvaluationUtils.INSTANCE.getNDCG(relevant, metrics1);
 //        double nmap2 = getMap(relevant, metrics2);
 
         System.out.println("Map is " + nmap1);

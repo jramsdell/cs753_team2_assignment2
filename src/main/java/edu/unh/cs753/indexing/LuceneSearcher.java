@@ -45,7 +45,7 @@ public class LuceneSearcher {
     }
 
     public void run() throws IOException {
-        FileWriter fstream = new FileWriter("results1.txt", true);
+        FileWriter fstream = new FileWriter("standard_bm25.run", false);
         BufferedWriter out = new BufferedWriter(fstream);
 
         for (Data.Page page : pages) {
@@ -67,7 +67,8 @@ public class LuceneSearcher {
     }
 
     public void customRun() throws IOException {
-        FileWriter fstream = new FileWriter("results2.txt", true);
+        custom();
+        FileWriter fstream = new FileWriter("custom_score.run", false);
         BufferedWriter out = new BufferedWriter(fstream);
 
         for (Data.Page page : pages) {
