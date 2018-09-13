@@ -35,23 +35,23 @@ public class Main {
 
 		String option = args[0];
 		String path = args[1];
-		String cborOutlineLoc = args[2];
 
 		if (option.equals("index")) {
 			LuceneIndexer indexer  = new LuceneIndexer("paragraphs"); // The directory that will be made
 			indexer.doIndex(path);
 		}
 		else if (option.equals("search")) {
+			String cborOutlineLoc = args[2];
 			LuceneSearcher searcher = new LuceneSearcher(path, cborOutlineLoc);
 			searcher.run();
 		} else if (option.equals("custom")) {
-
-           LuceneSearcher searcher= new LuceneSearcher(path, cborOutlineLoc);
-           searcher.customRun();
+			String cborOutlineLoc = args[2];
+			LuceneSearcher searcher= new LuceneSearcher(path, cborOutlineLoc);
+			searcher.customRun();
+		}
+		else if (option.equals("evaluate")) {
 
 		}
-
-
 
 	}
 

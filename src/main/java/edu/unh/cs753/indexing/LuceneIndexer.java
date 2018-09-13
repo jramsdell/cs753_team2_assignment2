@@ -25,12 +25,13 @@ public class LuceneIndexer {
             doc.add(new TextField("text", p.getTextOnly(), Field.Store.YES));
             writer.addDocument(doc);
             counter++;
-            if (counter % 20 == 0) {
-                System.out.println("Commited data");
+            if (counter % 50 == 0) {
+                System.out.println("Commited: " + counter + " paragraphs so far.");
                 writer.commit();
             }
         }
 
+        writer.commit();
         writer.close();
     }
 

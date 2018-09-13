@@ -14,11 +14,10 @@ public class EvaluationUtils {
 
         FileReader fstream = new FileReader(path);
         BufferedReader in = new BufferedReader(fstream);
-        String curLine;
 
-        while (in.readLine() != null) {
-            curLine = in.readLine();
-            String[] elements = curLine.split(" ");
+        String line = in.readLine();
+        while (line != null) {
+            String[] elements = line.split(" ");
             String query = elements[0];
             String ID = elements[2];
 
@@ -28,6 +27,7 @@ public class EvaluationUtils {
             }
             HashSet<String> hs = m.get(query);
             hs.add(ID);
+            line = in.readLine();
         }
         in.close();
         return m;
@@ -43,9 +43,9 @@ public class EvaluationUtils {
         String curLine;
 
         // If this query is in our first hashmap, then it is relevant, so add the id to the list
-        while (null != in.readLine()) {
-            curLine = in.readLine();
-            String[] elements = curLine.split(" ");
+        String line = in.readLine();
+        while (line != null) {
+            String[] elements = line.split(" ");
             String query = elements[0];
             String ID = elements[2];
 
@@ -55,6 +55,7 @@ public class EvaluationUtils {
             }
             ArrayList<String> al = m.get(query);
             al.add(ID);
+            line = in.readLine();
         }
         in.close();
         return m;
@@ -76,8 +77,11 @@ public class EvaluationUtils {
             Set<String> relevantDocuments = qrels.get(query);
             int r = relevantDocuments.size();
             List<String> retrievedDocuments = res1.get(query);
+            if (retrievedDocuments == null) {
+                continue;
+            }
 
-            while (counter < r) {
+            while (counter < r && counter < retrievedDocuments.size()) {
                 if (relevantDocuments.contains(retrievedDocuments.get(counter))) {
                     hits += 1.0;
                 }
@@ -142,24 +146,38 @@ public class EvaluationUtils {
         return totalMap / numberOfQueries;
     }
 
+    public static double getNDCG(HashMap<String, HashSet<String>> qrels, HashMap<String, ArrayList<String>> queryResults) {
+        for (String query : qrels.keySet()) {
+            Set<String> relDocs = qrels.get(query);
+            ArrayList<String> retrievedDocs = queryResults.get(query);
+            if (retrievedDocs == null) {
+                continue;
+            }
+
+
+
+        }
+
+        return 0.0;
+    }
 
 
     public static void main(String [] args) throws IOException {
 
-        String qrels = "/Users/abhinav/desktop/train.pages.cbor-article.qrels";
+        String qrels = "/home/hcgs/data_science/data/test200/test200-train/train.pages.cbor-article.qrels";
         HashMap<String, HashSet<String>> relevant = EvaluationUtils.GetRelevantQueries(qrels);
 
-        String res1 = "/Users/abhinav/desktop/results1.txt";
-        String res2 = "/Users/abhinav/desktop/results2.txt";
+        String res1 = "/home/hcgs/Desktop/projects/cs753_team2_assignment2/results1.txt";
+//        String res2 = "/Users/abhinav/desktop/results2.txt";
 
         HashMap<String, ArrayList<String>> metrics1 = EvaluationUtils.ParseResults(res1);
-        HashMap<String, ArrayList<String>> metrics2 = EvaluationUtils.ParseResults(res2);
+//        HashMap<String, ArrayList<String>> metrics2 = EvaluationUtils.ParseResults(res2);
 
         double nmap1 = getMap(relevant, metrics1);
-        double nmap2 = getMap(relevant, metrics2);
+//        double nmap2 = getMap(relevant, metrics2);
 
         System.out.println("Map is " + nmap1);
-        System.out.println("Map is " + nmap2);
+//        System.out.println("Map is " + nmap2);
     }
 
 

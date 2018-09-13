@@ -8,6 +8,7 @@
 *.ctxt
 .gradle
 .idea
+paragraphs/
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
